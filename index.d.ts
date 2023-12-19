@@ -1,17 +1,19 @@
-/**
-Strip [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code) from a string.
+type AnymatchFn = (testString: string) => boolean;
+type AnymatchPattern = string|RegExp|AnymatchFn;
+type AnymatchMatcher = AnymatchPattern|AnymatchPattern[]
+type AnymatchTester = {
+  (testString: string|any[], returnIndex: true): number;
+  (testString: string|any[]): boolean;
+}
 
-@example
-```
-import stripAnsi = require('strip-ansi');
+type PicomatchOptions = {dot: boolean};
 
-stripAnsi('\u001B[4mUnicorn\u001B[0m');
-//=> 'Unicorn'
+declare const anymatch: {
+  (matchers: AnymatchMatcher): AnymatchTester;
+  (matchers: AnymatchMatcher, testString: string|any[], returnIndex: true | PicomatchOptions): number;
+  (matchers: AnymatchMatcher, testString: string|any[]): boolean;
+}
 
-stripAnsi('\u001B]8;;https://github.com\u0007Click\u001B]8;;\u0007');
-//=> 'Click'
-```
-*/
-declare function stripAnsi(string: string): string;
-
-export = stripAnsi;
+export {AnymatchMatcher as Matcher}
+export {AnymatchTester as Tester}
+export default anymatch
