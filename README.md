@@ -1,16 +1,80 @@
-# Installation
-> `npm install --save @types/node`
+# ansi-align
 
-# Summary
-This package contains type definitions for Node.js (https://nodejs.org/).
+> align-text with ANSI support for CLIs
 
-# Details
-Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node.
+[![Build Status](https://travis-ci.org/nexdrew/ansi-align.svg?branch=master)](https://travis-ci.org/nexdrew/ansi-align)
+[![Coverage Status](https://coveralls.io/repos/github/nexdrew/ansi-align/badge.svg?branch=master)](https://coveralls.io/github/nexdrew/ansi-align?branch=master)
+[![Standard Version](https://img.shields.io/badge/release-standard%20version-brightgreen.svg)](https://github.com/conventional-changelog/standard-version)
+[![Greenkeeper badge](https://badges.greenkeeper.io/nexdrew/ansi-align.svg)](https://greenkeeper.io/)
 
-### Additional Details
- * Last updated: Wed, 29 Sep 2021 14:01:20 GMT
- * Dependencies: none
- * Global values: `AbortController`, `AbortSignal`, `__dirname`, `__filename`, `console`, `exports`, `gc`, `global`, `module`, `process`, `require`
+Easily center- or right- align a block of text, carefully ignoring ANSI escape codes.
 
-# Credits
-These definitions were written by [Microsoft TypeScript](https://github.com/Microsoft), [DefinitelyTyped](https://github.com/DefinitelyTyped), [Alberto Schiabel](https://github.com/jkomyno), [Alvis HT Tang](https://github.com/alvis), [Andrew Makarov](https://github.com/r3nya), [Benjamin Toueg](https://github.com/btoueg), [Chigozirim C.](https://github.com/smac89), [David Junger](https://github.com/touffy), [Deividas Bakanas](https://github.com/DeividasBakanas), [Eugene Y. Q. Shen](https://github.com/eyqs), [Hannes Magnusson](https://github.com/Hannes-Magnusson-CK), [Huw](https://github.com/hoo29), [Kelvin Jin](https://github.com/kjin), [Klaus Meinhardt](https://github.com/ajafff), [Lishude](https://github.com/islishude), [Mariusz Wiktorczyk](https://github.com/mwiktorczyk), [Mohsen Azimi](https://github.com/mohsen1), [Nicolas Even](https://github.com/n-e), [Nikita Galkin](https://github.com/galkin), [Parambir Singh](https://github.com/parambirs), [Sebastian Silbermann](https://github.com/eps1lon), [Simon Schick](https://github.com/SimonSchick), [Thomas den Hollander](https://github.com/ThomasdenH), [Wilco Bakker](https://github.com/WilcoBakker), [wwwy3y3](https://github.com/wwwy3y3), [Samuel Ainsworth](https://github.com/samuela), [Kyle Uehlein](https://github.com/kuehlein), [Thanik Bhongbhibhat](https://github.com/bhongy), [Marcin Kopacz](https://github.com/chyzwar), [Trivikram Kamat](https://github.com/trivikr), [Minh Son Nguyen](https://github.com/nguymin4), [Junxiao Shi](https://github.com/yoursunny), [Ilia Baryshnikov](https://github.com/qwelias), [ExE Boss](https://github.com/ExE-Boss), [Surasak Chaisurin](https://github.com/Ryan-Willpower), [Piotr Błażejewicz](https://github.com/peterblazejewicz), [Anna Henningsen](https://github.com/addaleax), [Victor Perin](https://github.com/victorperin), [Yongsheng Zhang](https://github.com/ZYSzys), [NodeJS Contributors](https://github.com/NodeJS), [Linus Unnebäck](https://github.com/LinusU), and [wafuwafu13](https://github.com/wafuwafu13).
+E.g. turn this:
+
+<img width="281" alt="ansi text block no alignment :(" src="https://cloud.githubusercontent.com/assets/1929625/14937509/7c3076dc-0ed7-11e6-8c16-4f6a4ccc8346.png">
+
+Into this:
+
+<img width="278" alt="ansi text block center aligned!" src="https://cloud.githubusercontent.com/assets/1929625/14937510/7c3ca0b0-0ed7-11e6-8f0a-541ca39b6e0a.png">
+
+## Install
+
+```sh
+npm install --save ansi-align
+```
+
+```js
+var ansiAlign = require('ansi-align')
+```
+
+## API
+
+### `ansiAlign(text, [opts])`
+
+Align the given text per the line with the greatest [`string-width`](https://github.com/sindresorhus/string-width), returning a new string (or array).
+
+#### Arguments
+
+- `text`: required, string or array
+
+    The text to align. If a string is given, it will be split using either the `opts.split` value or `'\n'` by default. If an array is given, a different array of modified strings will be returned.
+
+- `opts`: optional, object
+
+    Options to change behavior, see below.
+
+#### Options
+
+- `opts.align`: string, default `'center'`
+
+   The alignment mode. Use `'center'` for center-alignment, `'right'` for right-alignment, or `'left'` for left-alignment. Note that the given `text` is assumed to be left-aligned already, so specifying `align: 'left'` just returns the `text` as is (no-op).
+
+- `opts.split`: string or RegExp, default `'\n'`
+
+    The separator to use when splitting the text. Only used if text is given as a string.
+
+- `opts.pad`: string, default `' '`
+
+    The value used to left-pad (prepend to) lines of lesser width. Will be repeated as necessary to adjust alignment to the line with the greatest width.
+
+### `ansiAlign.center(text)`
+
+Alias for `ansiAlign(text, { align: 'center' })`.
+
+### `ansiAlign.right(text)`
+
+Alias for `ansiAlign(text, { align: 'right' })`.
+
+### `ansiAlign.left(text)`
+
+Alias for `ansiAlign(text, { align: 'left' })`, which is a no-op.
+
+## Similar Packages
+
+- [`center-align`](https://github.com/jonschlinkert/center-align): Very close to this package, except it doesn't support ANSI codes.
+- [`left-pad`](https://github.com/camwest/left-pad): Great for left-padding but does not support center alignment or ANSI codes.
+- Pretty much anything by the [chalk](https://github.com/chalk) team
+
+## License
+
+ISC © Contributors
