@@ -1,171 +1,184 @@
-# 5.0.1 (2021-02-22)
+# Release history
 
-  * Update `node-pre-gyp` to 1.0.0
+All notable changes to this project will be documented in this file.
 
-# 5.0.0 (2020-06-02)
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-  * Fix the bcrypt "wrap-around" bug. It affects passwords with lengths >= 255.
-    It is uncommon but it's a bug nevertheless. Previous attempts to fix the bug
-    was unsuccessful.
-  * Experimental support for z/OS
-  * Fix a bug related to NUL in password input
-  * Update `node-pre-gyp` to 0.15.0
+<details>
+  <summary><strong>Guiding Principles</strong></summary>
 
-# 4.0.1 (2020-02-27)
+- Changelogs are for humans, not machines.
+- There should be an entry for every single version.
+- The same types of changes should be grouped.
+- Versions and sections should be linkable.
+- The latest version comes first.
+- The release date of each versions is displayed.
+- Mention whether you follow Semantic Versioning.
 
-  * Fix compilation errors in Alpine linux
+</details>
 
-# 4.0.0 (2020-02-17)
+<details>
+  <summary><strong>Types of changes</strong></summary>
 
-  * Switch to NAPI bcrypt
-  * Drop support for NodeJS 8
+Changelog entries are classified using the following labels _(from [keep-a-changelog](http://keepachangelog.com/)_):
 
-# 3.0.8 (2019-12-31)
+- `Added` for new features.
+- `Changed` for changes in existing functionality.
+- `Deprecated` for soon-to-be removed features.
+- `Removed` for now removed features.
+- `Fixed` for any bug fixes.
+- `Security` in case of vulnerabilities.
 
-  * Update `node-pre-gyp` to 0.14
-  * Pre-built binaries for NodeJS 13
+</details>
 
-# 3.0.7 (2019-10-18)
+## [3.0.0] - 2018-04-08
 
-  * Update `nan` to 2.14.0
-  * Update `node-pre-gyp` to 0.13
+v3.0 is a complete refactor, resulting in a faster, smaller codebase, with fewer deps, and a more accurate parser and compiler. 
 
-# 3.0.6 (2019-04-11)
+**Breaking Changes**
 
-  * Update `nan` to 2.13.2
+- The undocumented `.makeRe` method was removed
 
-# 3.0.5 (2019-03-19)
+**Non-breaking changes**
 
-  * Update `nan` to 2.13.1
-  * NodeJS 12 compatibility
-  * Remove `node-pre-gyp` from bundled dependencies
+- Caching was removed
 
-# 3.0.4-napi (2019-03-08)
+## [2.3.2] - 2018-04-08
 
-  * Sync N-API bcrypt with NAN bcrypt
+- start refactoring
+- cover sets
+- better range handling
 
-# 3.0.4 (2019-02-07)
+## [2.3.1] - 2018-02-17
 
-  * Fix GCC, NAN and V8 deprecation warnings
+- Remove unnecessary escape in Regex. (#14)
 
-# 3.0.3 (2018-12-19)
+## [2.3.0] - 2017-10-19
 
-  * Update `nan` to 2.12.1
+- minor code reorganization
+- optimize regex
+- expose `maxLength` option
 
-# 3.0.2 (2018-10-18)
+## [2.2.1] - 2017-05-30
 
-  * Update `nan` to 2.11.1
+- don't condense when braces contain extglobs
 
-# 3.0.1 (2018-09-20)
+## [2.2.0] - 2017-05-28
 
-  * Update `nan` to 2.11.0
+- ensure word boundaries are preserved
+- fixes edge case where extglob characters precede a brace pattern
 
-# 3.0.0 (2018-07-06)
+## [2.1.1] - 2017-04-27
 
-  * Drop support for NodeJS <= 4
+- use snapdragon-node
+- handle edge case
+- optimizations, lint
 
-# 2.0.1 (2018-04-20)
+## [2.0.4] - 2017-04-11
 
-  * Update `node-pre-gyp` to allow downloading prebuilt modules
+- pass opts to compiler
+- minor optimization in create method
+- re-write parser handlers to remove negation regex
 
-# 2.0.0 (2018-04-07)
+## [2.0.3] - 2016-12-10
 
-  * Make `2b` the default bcrypt version
+- use split-string
+- clear queue at the end
+- adds sequences example
+- add unit tests
 
-# 1.1.0-napi (2018-01-21)
+## [2.0.2] - 2016-10-21
 
-  * Initial support for [N-API](https://nodejs.org/api/n-api.html)
+- fix comma handling in nested extglobs
 
-# 1.0.3 (2016-08-23)
+## [2.0.1] - 2016-10-20
 
-  * update to nan v2.6.2 for NodeJS 8 support
-  * Fix: use npm scripts instead of node-gyp directly.
+- add comments
+- more tests, ensure quotes are stripped
 
-# 1.0.2 (2016-12-31)
+## [2.0.0] - 2016-10-19
 
-  * Fix `compare` promise rejection with invalid arguments
+- don't expand braces inside character classes
+- add quantifier pattern
 
-# 1.0.1 (2016-12-07)
+## [1.8.5] - 2016-05-21
 
-  * Fix destructuring imports with promises
+- Refactor (#10)
 
-# 1.0.0 (2016-12-04)
+## [1.8.4] - 2016-04-20
 
-  * add Promise support (commit 2488473)
+- fixes https://github.com/jonschlinkert/micromatch/issues/66
 
-# 0.8.7 (2016-06-09)
+## [1.8.0] - 2015-03-18
 
-  * update nan to 2.3.5 for improved node v6 support
+- adds exponent examples, tests
+- fixes the first example in https://github.com/jonschlinkert/micromatch/issues/38
 
-# 0.8.6 (2016-04-20)
+## [1.6.0] - 2015-01-30
 
-  * update nan for node v6 support
+- optimizations, `bash` mode:
+- improve path escaping
 
-# 0.8.5 (2015-08-12)
+## [1.5.0] - 2015-01-28
 
-  * update to nan v2 (adds support for iojs 3)
+- Merge pull request #5 from eush77/lib-files
 
-# 0.8.4 (2015-07-24)
+## [1.4.0] - 2015-01-24
 
-  * fix deprecation warning for the Encode API
+- add extglob tests
+- externalize exponent function
+- better whitespace handling
 
-# 0.8.3 (2015-05-06)
+## [1.3.0] - 2015-01-24
 
-  * update nan to 1.8.4 for iojs 2.x support
+- make regex patterns explicity
 
-# 0.8.2 (2015-03-28)
+## [1.1.0] - 2015-01-11
 
-  * always use callback for generating random bytes to avoid blocking
+- don't create a match group with `makeRe`
 
-# 0.8.1 (2015-01-18)
-  * update NaN to 1.5.0 for iojs support
+## [1.0.0] - 2014-12-23
 
-# 0.8.0 (2014-08-03)
-  * migrate to NAN for bindings
+- Merge commit '97b05f5544f8348736a8efaecf5c32bbe3e2ad6e'
+- support empty brace syntax
+- better bash coverage
+- better support for regex strings
 
-# v0.5.0
-  * Fix for issue around empty string params throwing Errors.
-  * Method deprecation.
-  * Upgrade from libeio/ev to libuv. (shtylman)
-  ** --- NOTE --- Breaks 0.4.x compatability
-  * EV_MULTIPLICITY compile flag.
+## [0.1.4] - 2014-11-14
 
-# v0.4.1
-  * Thread safety fix around OpenSSL (GH-32). (bnoordhuis - through node)
-  * C++ code changes using delete and new instead of malloc and free. (shtylman)
-  * Compile options for speed, zoom. (shtylman)
-  * Move much of the type and variable checking to the JS. (shtylman)
+- improve recognition of bad args, recognize mismatched argument types
+- support escaping
+- remove pathname-expansion
+- support whitespace in patterns
 
-# v0.4.0
-  * Added getRounds function that will tell you the number of rounds within a hash/salt
+## [0.1.0]
 
-# v0.3.2
-  * Fix api issue with async salt gen first param
+- first commit
 
-# v0.3.1
-  * Compile under node 0.5.x
+[2.3.2]: https://github.com/micromatch/braces/compare/2.3.1...2.3.2
+[2.3.1]: https://github.com/micromatch/braces/compare/2.3.0...2.3.1
+[2.3.0]: https://github.com/micromatch/braces/compare/2.2.1...2.3.0
+[2.2.1]: https://github.com/micromatch/braces/compare/2.2.0...2.2.1
+[2.2.0]: https://github.com/micromatch/braces/compare/2.1.1...2.2.0
+[2.1.1]: https://github.com/micromatch/braces/compare/2.1.0...2.1.1
+[2.1.0]: https://github.com/micromatch/braces/compare/2.0.4...2.1.0
+[2.0.4]: https://github.com/micromatch/braces/compare/2.0.3...2.0.4
+[2.0.3]: https://github.com/micromatch/braces/compare/2.0.2...2.0.3
+[2.0.2]: https://github.com/micromatch/braces/compare/2.0.1...2.0.2
+[2.0.1]: https://github.com/micromatch/braces/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/micromatch/braces/compare/1.8.5...2.0.0
+[1.8.5]: https://github.com/micromatch/braces/compare/1.8.4...1.8.5
+[1.8.4]: https://github.com/micromatch/braces/compare/1.8.0...1.8.4
+[1.8.0]: https://github.com/micromatch/braces/compare/1.6.0...1.8.0
+[1.6.0]: https://github.com/micromatch/braces/compare/1.5.0...1.6.0
+[1.5.0]: https://github.com/micromatch/braces/compare/1.4.0...1.5.0
+[1.4.0]: https://github.com/micromatch/braces/compare/1.3.0...1.4.0
+[1.3.0]: https://github.com/micromatch/braces/compare/1.2.0...1.3.0
+[1.2.0]: https://github.com/micromatch/braces/compare/1.1.0...1.2.0
+[1.1.0]: https://github.com/micromatch/braces/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/micromatch/braces/compare/0.1.4...1.0.0
+[0.1.4]: https://github.com/micromatch/braces/compare/0.1.0...0.1.4
 
-# v0.3.0
-  * Internal Refactoring
-  * Remove pthread dependencies and locking
-  * Fix compiler warnings and a memory bug
-
-# v0.2.4
-  * Use threadsafe functions instead of pthread mutexes
-  * salt validation to make sure the salt is of the correct size and format
-
-# v0.2.3
-  * cygwin support
-
-# v0.2.2
-  * Remove dependency on libbsd, use libssl instead
-
-# v0.2.0
-  * Added async functionality
-  * API changes
-    * hashpw -> encrypt
-    * all old sync methods now end with _sync
-  * Removed libbsd(arc4random) dependency...now uses openssl which is more widely spread
-
-# v0.1.2
-  * Security fix. Wasn't reading rounds in properly and was always only using 4 rounds
+[Unreleased]: https://github.com/micromatch/braces/compare/0.1.0...HEAD
+[keep-a-changelog]: https://github.com/olivierlacan/keep-a-changelog

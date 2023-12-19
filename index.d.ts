@@ -1,200 +1,108 @@
-import {LiteralUnion} from 'type-fest';
-import {BoxStyle, Boxes} from 'cli-boxes';
+/// <reference types="node"/>
+import {Stream} from 'stream';
 
-declare namespace boxen {
+declare class MaxBufferErrorClass extends Error {
+	readonly name: 'MaxBufferError';
+	constructor();
+}
+
+declare namespace getStream {
+	interface Options {
+		/**
+		Maximum length of the returned string. If it exceeds this value before the stream ends, the promise will be rejected with a `MaxBufferError` error.
+
+		@default Infinity
+		*/
+		readonly maxBuffer?: number;
+	}
+
+	interface OptionsWithEncoding<EncodingType = BufferEncoding> extends Options {
+		/**
+		[Encoding](https://nodejs.org/api/buffer.html#buffer_buffer) of the incoming stream.
+
+		@default 'utf8'
+		*/
+		readonly encoding?: EncodingType;
+	}
+
+	type MaxBufferError = MaxBufferErrorClass;
+}
+
+declare const getStream: {
 	/**
-	Characters used for custom border.
+	Get the `stream` as a string.
+
+	@returns A promise that resolves when the end event fires on the stream, indicating that there is no more data to be read. The stream is switched to flowing mode.
 
 	@example
 	```
-	// affffb
-	// e    e
-	// dffffc
+	import * as fs from 'fs';
+	import getStream = require('get-stream');
 
-	const border: CustomBorderStyle = {
-		topLeft: 'a',
-		topRight: 'b',
-		bottomRight: 'c',
-		bottomLeft: 'd',
-		vertical: 'e',
-		horizontal: 'f'
-	};
+	(async () => {
+		const stream = fs.createReadStream('unicorn.txt');
+
+		console.log(await getStream(stream));
+		//               ,,))))))));,
+		//            __)))))))))))))),
+		// \|/       -\(((((''''((((((((.
+		// -*-==//////((''  .     `)))))),
+		// /|\      ))| o    ;-.    '(((((                                  ,(,
+		//          ( `|    /  )    ;))))'                               ,_))^;(~
+		//             |   |   |   ,))((((_     _____------~~~-.        %,;(;(>';'~
+		//             o_);   ;    )))(((` ~---~  `::           \      %%~~)(v;(`('~
+		//                   ;    ''''````         `:       `:::|\,__,%%    );`'; ~
+		//                  |   _                )     /      `:|`----'     `-'
+		//            ______/\/~    |                 /        /
+		//          /~;;.____/;;'  /          ___--,-(   `;;;/
+		//         / //  _;______;'------~~~~~    /;;/\    /
+		//        //  | |                        / ;   \;;,\
+		//       (<_  | ;                      /',/-----'  _>
+		//        \_| ||_                     //~;~~~~~~~~~
+		//            `\_|                   (,~~
+		//                                    \~\
+		//                                     ~~
+	})();
 	```
 	*/
-	interface CustomBorderStyle extends BoxStyle {}
+	(stream: Stream, options?: getStream.OptionsWithEncoding): Promise<string>;
 
 	/**
-	Spacing used for `padding` and `margin`.
+	Get the `stream` as a buffer.
+
+	It honors the `maxBuffer` option as above, but it refers to byte length rather than string length.
 	*/
-	interface Spacing {
-		readonly top: number;
-		readonly right: number;
-		readonly bottom: number;
-		readonly left: number;
-	}
+	buffer(
+		stream: Stream,
+		options?: getStream.OptionsWithEncoding
+	): Promise<Buffer>;
 
-	interface Options {
-		/**
-		Color of the box border.
-		*/
-		readonly borderColor?: LiteralUnion<
-		| 'black'
-		| 'red'
-		| 'green'
-		| 'yellow'
-		| 'blue'
-		| 'magenta'
-		| 'cyan'
-		| 'white'
-		| 'gray'
-		| 'grey'
-		| 'blackBright'
-		| 'redBright'
-		| 'greenBright'
-		| 'yellowBright'
-		| 'blueBright'
-		| 'magentaBright'
-		| 'cyanBright'
-		| 'whiteBright',
-		string
-		>;
+	/**
+	Get the `stream` as an array of values.
 
-		/**
-		Style of the box border.
+	It honors both the `maxBuffer` and `encoding` options. The behavior changes slightly based on the encoding chosen:
 
-		@default 'single'
-		*/
-		readonly borderStyle?: keyof Boxes | CustomBorderStyle;
+	- When `encoding` is unset, it assumes an [object mode stream](https://nodesource.com/blog/understanding-object-streams/) and collects values emitted from `stream` unmodified. In this case `maxBuffer` refers to the number of items in the array (not the sum of their sizes).
+	- When `encoding` is set to `buffer`, it collects an array of buffers. `maxBuffer` refers to the summed byte lengths of every buffer in the array.
+	- When `encoding` is set to anything else, it collects an array of strings. `maxBuffer` refers to the summed character lengths of every string in the array.
+	*/
+	array<StreamObjectModeType>(
+		stream: Stream,
+		options?: getStream.Options
+	): Promise<StreamObjectModeType[]>;
+	array(
+		stream: Stream,
+		options: getStream.OptionsWithEncoding<'buffer'>
+	): Promise<Buffer[]>;
+	array(
+		stream: Stream,
+		options: getStream.OptionsWithEncoding<BufferEncoding>
+	): Promise<string[]>;
 
-		/**
-		Reduce opacity of the border.
+	MaxBufferError: typeof MaxBufferErrorClass;
 
-		@default false
-		*/
-		readonly dimBorder?: boolean;
+	// TODO: Remove this for the next major release
+	default: typeof getStream;
+};
 
-		/**
-		Space between the text and box border.
-
-		@default 0
-		*/
-		readonly padding?: number | Spacing;
-
-		/**
-		Space around the box.
-
-		@default 0
-		*/
-		readonly margin?: number | Spacing;
-
-		/**
-		Float the box on the available terminal screen space.
-
-		@default 'left'
-		*/
-		readonly float?: 'left' | 'right' | 'center';
-
-		/**
-		Color of the background.
-		*/
-		readonly backgroundColor?: LiteralUnion<
-		| 'black'
-		| 'red'
-		| 'green'
-		| 'yellow'
-		| 'blue'
-		| 'magenta'
-		| 'cyan'
-		| 'white'
-		| 'blackBright'
-		| 'redBright'
-		| 'greenBright'
-		| 'yellowBright'
-		| 'blueBright'
-		| 'magentaBright'
-		| 'cyanBright'
-		| 'whiteBright',
-		string
-		>;
-
-		/**
-		Align the text in the box based on the widest line.
-
-		@default 'left'
-		@deprecated Use `textAlignment` instead.
-		*/
-		readonly align?: 'left' | 'right' | 'center';
-
-		/**
-		Align the text in the box based on the widest line.
-
-		@default 'left'
-		*/
-		readonly textAlignment?: 'left' | 'right' | 'center';
-
-		/**
-		Display a title at the top of the box.
-		If needed, the box will horizontally expand to fit the title.
-
-		@example
-		```
-		console.log(boxen('foo bar', {title: 'example'}));
-		// ┌ example ┐
-		// │foo bar  │
-		// └─────────┘
-		```
-		*/
-		readonly title?: string;
-
-		/**
-		Align the title in the top bar.
-
-		@default 'left'
-
-		@example
-		```
-		console.log(boxen('foo bar foo bar', {title: 'example', titleAlignment: 'center'}));
-		// ┌─── example ───┐
-		// │foo bar foo bar│
-		// └───────────────┘
-
-		console.log(boxen('foo bar foo bar', {title: 'example', titleAlignment: 'right'}));
-		// ┌────── example ┐
-		// │foo bar foo bar│
-		// └───────────────┘
-		```
-		*/
-		readonly titleAlignment?: 'left' | 'right' | 'center';
-	}
-}
-
-/**
-Creates a box in the terminal.
-
-@param text - The text inside the box.
-@returns The box.
-
-@example
-```
-import boxen = require('boxen');
-
-console.log(boxen('unicorn', {padding: 1}));
-// ┌─────────────┐
-// │             │
-// │   unicorn   │
-// │             │
-// └─────────────┘
-
-console.log(boxen('unicorn', {padding: 1, margin: 1, borderStyle: 'double'}));
-//
-// ╔═════════════╗
-// ║             ║
-// ║   unicorn   ║
-// ║             ║
-// ╚═════════════╝
-//
-```
-*/
-declare const boxen: (text: string, options?: boxen.Options) => string;
-
-export = boxen;
+export = getStream;
