@@ -1,152 +1,244 @@
-# ansi-styles [![Build Status](https://travis-ci.org/chalk/ansi-styles.svg?branch=master)](https://travis-ci.org/chalk/ansi-styles)
+# boxen
 
-> [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors_and_Styles) for styling strings in the terminal
+> Create boxes in the terminal
 
-You probably want the higher-level [chalk](https://github.com/chalk/chalk) module for styling your strings.
-
-<img src="screenshot.svg" width="900">
+![](screenshot.png)
 
 ## Install
 
 ```
-$ npm install ansi-styles
+$ npm install boxen
 ```
 
 ## Usage
 
 ```js
-const style = require('ansi-styles');
+const boxen = require('boxen');
 
-console.log(`${style.green.open}Hello world!${style.green.close}`);
+console.log(boxen('unicorn', {padding: 1}));
+/*
+┌─────────────┐
+│             │
+│   unicorn   │
+│             │
+└─────────────┘
+*/
 
+console.log(boxen('unicorn', {padding: 1, margin: 1, borderStyle: 'double'}));
+/*
 
-// Color conversion between 16/256/truecolor
-// NOTE: If conversion goes to 16 colors or 256 colors, the original color
-//       may be degraded to fit that color palette. This means terminals
-//       that do not support 16 million colors will best-match the
-//       original color.
-console.log(style.bgColor.ansi.hsl(120, 80, 72) + 'Hello world!' + style.bgColor.close);
-console.log(style.color.ansi256.rgb(199, 20, 250) + 'Hello world!' + style.color.close);
-console.log(style.color.ansi16m.hex('#abcdef') + 'Hello world!' + style.color.close);
+   ╔═════════════╗
+   ║             ║
+   ║   unicorn   ║
+   ║             ║
+   ╚═════════════╝
+
+*/
+
+console.log(boxen('unicorns love rainbows', {title: 'magical', titleAlignment: 'center'}));
+/*
+┌────── magical ───────┐
+│unicorns love rainbows│
+└──────────────────────┘
+*/
 ```
 
 ## API
 
-Each style has an `open` and `close` property.
+### boxen(text, options?)
 
-## Styles
+#### text
 
-### Modifiers
+Type: `string`
 
-- `reset`
-- `bold`
-- `dim`
-- `italic` *(Not widely supported)*
-- `underline`
-- `inverse`
-- `hidden`
-- `strikethrough` *(Not widely supported)*
+Text inside the box.
 
-### Colors
+#### options
 
-- `black`
-- `red`
-- `green`
-- `yellow`
-- `blue`
-- `magenta`
-- `cyan`
-- `white`
-- `blackBright` (alias: `gray`, `grey`)
-- `redBright`
-- `greenBright`
-- `yellowBright`
-- `blueBright`
-- `magentaBright`
-- `cyanBright`
-- `whiteBright`
+Type: `object`
 
-### Background colors
+##### borderColor
 
-- `bgBlack`
-- `bgRed`
-- `bgGreen`
-- `bgYellow`
-- `bgBlue`
-- `bgMagenta`
-- `bgCyan`
-- `bgWhite`
-- `bgBlackBright` (alias: `bgGray`, `bgGrey`)
-- `bgRedBright`
-- `bgGreenBright`
-- `bgYellowBright`
-- `bgBlueBright`
-- `bgMagentaBright`
-- `bgCyanBright`
-- `bgWhiteBright`
+Type: `string`\
+Values: `'black'` `'red'` `'green'` `'yellow'` `'blue'` `'magenta'` `'cyan'` `'white'` `'gray'` or a hex value like `'#ff0000'`
 
-## Advanced usage
+Color of the box border.
 
-By default, you get a map of styles, but the styles are also available as groups. They are non-enumerable so they don't show up unless you access them explicitly. This makes it easier to expose only a subset in a higher-level module.
+##### borderStyle
 
-- `style.modifier`
-- `style.color`
-- `style.bgColor`
-
-###### Example
-
-```js
-console.log(style.color.green.open);
+Type: `string | object`\
+Default: `'single'`\
+Values:
+- `'single'`
+```
+┌───┐
+│foo│
+└───┘
+```
+- `'double'`
+```
+╔═══╗
+║foo║
+╚═══╝
+```
+- `'round'` (`'single'` sides with round corners)
+```
+╭───╮
+│foo│
+╰───╯
+```
+- `'bold'`
+```
+┏━━━┓
+┃foo┃
+┗━━━┛
+```
+- `'singleDouble'` (`'single'` on top and bottom, `'double'` on right and left)
+```
+╓───╖
+║foo║
+╙───╜
+```
+- `'doubleSingle'` (`'double'` on top and bottom, `'single'` on right and left)
+```
+╒═══╕
+│foo│
+╘═══╛
+```
+- `'classic'`
+```
++---+
+|foo|
++---+
 ```
 
-Raw escape codes (i.e. without the CSI escape prefix `\u001B[` and render mode postfix `m`) are available under `style.codes`, which returns a `Map` with the open codes as keys and close codes as values.
+Style of the box border.
 
-###### Example
-
-```js
-console.log(style.codes.get(36));
-//=> 39
-```
-
-## [256 / 16 million (TrueColor) support](https://gist.github.com/XVilka/8346728)
-
-`ansi-styles` uses the [`color-convert`](https://github.com/Qix-/color-convert) package to allow for converting between various colors and ANSI escapes, with support for 256 and 16 million colors.
-
-The following color spaces from `color-convert` are supported:
-
-- `rgb`
-- `hex`
-- `keyword`
-- `hsl`
-- `hsv`
-- `hwb`
-- `ansi`
-- `ansi256`
-
-To use these, call the associated conversion function with the intended output, for example:
+Can be any of the above predefined styles or an object with the following keys:
 
 ```js
-style.color.ansi.rgb(100, 200, 15); // RGB to 16 color ansi foreground code
-style.bgColor.ansi.rgb(100, 200, 15); // RGB to 16 color ansi background code
-
-style.color.ansi256.hsl(120, 100, 60); // HSL to 256 color ansi foreground code
-style.bgColor.ansi256.hsl(120, 100, 60); // HSL to 256 color ansi foreground code
-
-style.color.ansi16m.hex('#C0FFEE'); // Hex (RGB) to 16 million color foreground code
-style.bgColor.ansi16m.hex('#C0FFEE'); // Hex (RGB) to 16 million color background code
+{
+	topLeft: '+',
+	topRight: '+',
+	bottomLeft: '+',
+	bottomRight: '+',
+	horizontal: '-',
+	vertical: '|'
+}
 ```
+
+##### dimBorder
+
+Type: `boolean`\
+Default: `false`
+
+Reduce opacity of the border.
+
+##### title
+
+Type: `string`
+
+Display a title at the top of the box.
+If needed, the box will horizontally expand to fit the title.
+
+Example:
+```js
+console.log(boxen('foo bar', {title: 'example'}));
+/*
+┌ example ┐
+│foo bar  │
+└─────────┘
+*/
+```
+
+##### titleAlignment
+
+Type: `string`\
+Default: `'left'`
+
+Align the title in the top bar.
+
+Values:
+- `'left'`
+```js
+/*
+┌ example ──────┐
+│foo bar foo bar│
+└───────────────┘
+*/
+```
+- `'center'`
+```js
+/*
+┌─── example ───┐
+│foo bar foo bar│
+└───────────────┘
+*/
+```
+- `'right'`
+```js
+/*
+┌────── example ┐
+│foo bar foo bar│
+└───────────────┘
+*/
+```
+
+##### padding
+
+Type: `number | object`\
+Default: `0`
+
+Space between the text and box border.
+
+Accepts a number or an object with any of the `top`, `right`, `bottom`, `left` properties. When a number is specified, the left/right padding is 3 times the top/bottom to make it look nice.
+
+##### margin
+
+Type: `number | object`\
+Default: `0`
+
+Space around the box.
+
+Accepts a number or an object with any of the `top`, `right`, `bottom`, `left` properties. When a number is specified, the left/right margin is 3 times the top/bottom to make it look nice.
+
+##### float
+
+Type: `string`\
+Default: `'left'`\
+Values: `'right'` `'center'` `'left'`
+
+Float the box on the available terminal screen space.
+
+##### backgroundColor
+
+Type: `string`\
+Values: `'black'` `'red'` `'green'` `'yellow'` `'blue'` `'magenta'` `'cyan'` `'white'` `'gray'` or a hex value like `'#ff0000'`
+
+Color of the background.
+
+##### textAlignment
+
+Type: `string`\
+Default: `'left'`\
+Values: `'left'` `'center'` `'right'`
+
+Align the text in the box based on the widest line.
 
 ## Related
 
-- [ansi-escapes](https://github.com/sindresorhus/ansi-escapes) - ANSI escape codes for manipulating the terminal
+- [boxen-cli](https://github.com/sindresorhus/boxen-cli) - CLI for this module
+- [cli-boxes](https://github.com/sindresorhus/cli-boxes) - Boxes for use in the terminal
+- [ink-box](https://github.com/sindresorhus/ink-box) - Box component for Ink that uses this package
 
-## Maintainers
+---
 
-- [Sindre Sorhus](https://github.com/sindresorhus)
-- [Josh Junon](https://github.com/qix-)
-
-## For enterprise
-
-Available as part of the Tidelift Subscription.
-
-The maintainers of `ansi-styles` and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use. [Learn more.](https://tidelift.com/subscription/pkg/npm-ansi-styles?utm_source=npm-ansi-styles&utm_medium=referral&utm_campaign=enterprise&utm_term=repo)
+<div align="center">
+	<b>
+		<a href="https://tidelift.com/subscription/pkg/npm-boxen?utm_source=npm-boxen&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
+	</b>
+	<br>
+	<sub>
+		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
+	</sub>
+</div>

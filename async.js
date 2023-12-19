@@ -1,181 +1,161 @@
-var bcrypt = require('../bcrypt');
+"use strict";
+var firstLineError;
+try {throw new Error(); } catch (e) {firstLineError = e;}
+var schedule = require("./schedule");
+var Queue = require("./queue");
+var util = require("./util");
 
-module.exports = {
-    test_salt_length: function(assert) {
-        assert.expect(1);
-        bcrypt.genSalt(10, function(err, salt) {
-            assert.strictEqual(29, salt.length, "Salt isn't the correct length.");
-            assert.done();
-        });
-    },
-    test_salt_only_cb: function(assert) {
-        assert.doesNotThrow(function() {bcrypt.genSalt(function(err, salt) {});}, "Should not throw an Error. Rounds and seed length are optional.");
-        assert.done();
-    },
-    test_salt_rounds_is_string_number: function(assert) {
-        bcrypt.genSalt('10', void 0, function (err, salt) {
-            assert.ok((err instanceof Error), "Should be an Error. genSalt requires round to be of type number.");
-            assert.done();
-        });
-    },
-    test_salt_rounds_is_string_non_number: function(assert) {
-        bcrypt.genSalt('z', function (err, salt) {
-            assert.ok((err instanceof Error), "Should throw an Error. genSalt requires rounds to of type number.");
-            assert.done();
-        });
-    },
-    test_salt_minor: function(assert) {
-        assert.expect(3);
-        bcrypt.genSalt(10, 'a', function(err, salt) {
-            assert.strictEqual(29, salt.length, "Salt isn't the correct length.");
-            var split_salt = salt.split('$');
-            assert.strictEqual(split_salt[1], '2a');
-            assert.strictEqual(split_salt[2], '10');
-            assert.done();
-        });
-    },
-    test_salt_minor_b: function(assert) {
-        assert.expect(3);
-        bcrypt.genSalt(10, 'b', function(err, salt) {
-            assert.strictEqual(29, salt.length, "Salt isn't the correct length.");
-            var split_salt = salt.split('$');
-            assert.strictEqual(split_salt[1], '2b');
-            assert.strictEqual(split_salt[2], '10');
-            assert.done();
-        });
-    },
-    test_hash: function(assert) {
-        assert.expect(1);
-        bcrypt.genSalt(10, function(err, salt) {
-            bcrypt.hash('password', salt, function(err, res) {
-                assert.ok(res, "Res should be defined.");
-                assert.done();
-            });
-        });
-    },
-    test_hash_rounds: function(assert) {
-        assert.expect(1);
-        bcrypt.hash('bacon', 8, function(err, hash) {
-          assert.strictEqual(bcrypt.getRounds(hash), 8, "Number of rounds should be that specified in the function call.");
-          assert.done();
-        });
-    },
-    test_hash_empty_strings: function(assert) {
-        assert.expect(2);
-        bcrypt.genSalt(10, function(err, salt) {
-            bcrypt.hash('', salt, function(err, res) {
-                assert.ok(res, "Res should be defined even with an empty pw.");
-                bcrypt.hash('', '', function(err, res) {
-                  if (err) {
-                    assert.ok(err);
-                  } else {
-                    assert.fail();
-                  }
+function Async() {
+    this._customScheduler = false;
+    this._isTickUsed = false;
+    this._lateQueue = new Queue(16);
+    this._normalQueue = new Queue(16);
+    this._haveDrainedQueues = false;
+    this._trampolineEnabled = true;
+    var self = this;
+    this.drainQueues = function () {
+        self._drainQueues();
+    };
+    this._schedule = schedule;
+}
 
-                  assert.done();
-                });
-            });
-        });
-    },
-    test_hash_no_params: function(assert) {
-        bcrypt.hash(function (err, hash) {
-            assert.ok(err, "Should be an error. No params.");
-            assert.done();
-        });
-    },
-    test_hash_one_param: function(assert) {
-        bcrypt.hash('password', function (err, hash) {
-            assert.ok(err, "Should be an Error. No salt.");
-            assert.done();
-        });
-    },
-    test_hash_salt_validity: function(assert) {
-        assert.expect(3);
-        bcrypt.hash('password', '$2a$10$somesaltyvaluertsetrse', function(err, enc) {
-            assert.strictEqual(err, undefined);
-            bcrypt.hash('password', 'some$value', function(err, enc) {
-                assert.notEqual(err, undefined);
-                assert.strictEqual(err.message, "Invalid salt. Salt must be in the form of: $Vers$log2(NumRounds)$saltvalue");
-                assert.done();
-            });
-        });
-    },
-    test_verify_salt: function(assert) {
-        assert.expect(2);
-        bcrypt.genSalt(10, function(err, salt) {
-            var split_salt = salt.split('$');
-            assert.strictEqual(split_salt[1], '2b');
-            assert.strictEqual(split_salt[2], '10');
-            assert.done();
-        });
-    },
-    test_verify_salt_min_rounds: function(assert) {
-        assert.expect(2);
-        bcrypt.genSalt(1, function(err, salt) {
-            var split_salt = salt.split('$');
-            assert.strictEqual(split_salt[1], '2b');
-            assert.strictEqual(split_salt[2], '04');
-            assert.done();
-        });
-    },
-    test_verify_salt_max_rounds: function(assert) {
-        assert.expect(2);
-        bcrypt.genSalt(100, function(err, salt) {
-            var split_salt = salt.split('$');
-            assert.strictEqual(split_salt[1], '2b');
-            assert.strictEqual(split_salt[2], '31');
-            assert.done();
-        });
-    },
-    test_hash_compare: function(assert) {
-        assert.expect(3);
-        bcrypt.genSalt(10, function(err, salt) {
-            assert.strictEqual(29, salt.length, "Salt isn't the correct length.");
-            bcrypt.hash("test", salt, function(err, hash) {
-                bcrypt.compare("test", hash, function(err, res) {
-                    assert.strictEqual(res, true, "These hashes should be equal.");
-                    bcrypt.compare("blah", hash, function(err, res) {
-                        assert.strictEqual(res, false, "These hashes should not be equal.");
-                        assert.done();
-                    });
-                });
-            });
-        });
-    },
-    test_hash_compare_empty_strings: function(assert) {
-        assert.expect(2);
-        var hash = bcrypt.hashSync("test", bcrypt.genSaltSync(10));
+Async.prototype.setScheduler = function(fn) {
+    var prev = this._schedule;
+    this._schedule = fn;
+    this._customScheduler = true;
+    return prev;
+};
 
-        bcrypt.compare("", hash, function(err, res) {
-          assert.strictEqual(res, false, "These hashes should not be equal.");
-          bcrypt.compare("", "", function(err, res) {
-            assert.strictEqual(res, false, "These hashes should not be equal.");
-            assert.done();
-          });
-        });
-    },
-    test_hash_compare_invalid_strings: function(assert) {
-      var fullString = 'envy1362987212538';
-      var hash = '$2a$10$XOPbrlUPQdwdJUpSrIF6X.LbE14qsMmKGhM1A8W9iqaG3vv1BD7WC';
-      var wut = ':';
-      bcrypt.compare(fullString, hash, function(err, res) {
-        assert.ok(res);
-        bcrypt.compare(fullString, wut, function(err, res) {
-          assert.ok(!res);
-          assert.done();
-        });
-      });
-    },
-    test_compare_no_params: function(assert) {
-        bcrypt.compare(function(err, hash) {
-            assert.ok(err, 'Should be an error. No params.');
-            assert.done();
-        });
-    },
-    test_hash_compare_one_param: function(assert) {
-        bcrypt.compare('password', function(err, hash) {
-            assert.ok(err, 'Should be an Error. No hash.');
-            assert.done();
-        });
+Async.prototype.hasCustomScheduler = function() {
+    return this._customScheduler;
+};
+
+Async.prototype.enableTrampoline = function() {
+    this._trampolineEnabled = true;
+};
+
+Async.prototype.disableTrampolineIfNecessary = function() {
+    if (util.hasDevTools) {
+        this._trampolineEnabled = false;
     }
 };
+
+Async.prototype.haveItemsQueued = function () {
+    return this._isTickUsed || this._haveDrainedQueues;
+};
+
+
+Async.prototype.fatalError = function(e, isNode) {
+    if (isNode) {
+        process.stderr.write("Fatal " + (e instanceof Error ? e.stack : e) +
+            "\n");
+        process.exit(2);
+    } else {
+        this.throwLater(e);
+    }
+};
+
+Async.prototype.throwLater = function(fn, arg) {
+    if (arguments.length === 1) {
+        arg = fn;
+        fn = function () { throw arg; };
+    }
+    if (typeof setTimeout !== "undefined") {
+        setTimeout(function() {
+            fn(arg);
+        }, 0);
+    } else try {
+        this._schedule(function() {
+            fn(arg);
+        });
+    } catch (e) {
+        throw new Error("No async scheduler available\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+};
+
+function AsyncInvokeLater(fn, receiver, arg) {
+    this._lateQueue.push(fn, receiver, arg);
+    this._queueTick();
+}
+
+function AsyncInvoke(fn, receiver, arg) {
+    this._normalQueue.push(fn, receiver, arg);
+    this._queueTick();
+}
+
+function AsyncSettlePromises(promise) {
+    this._normalQueue._pushOne(promise);
+    this._queueTick();
+}
+
+if (!util.hasDevTools) {
+    Async.prototype.invokeLater = AsyncInvokeLater;
+    Async.prototype.invoke = AsyncInvoke;
+    Async.prototype.settlePromises = AsyncSettlePromises;
+} else {
+    Async.prototype.invokeLater = function (fn, receiver, arg) {
+        if (this._trampolineEnabled) {
+            AsyncInvokeLater.call(this, fn, receiver, arg);
+        } else {
+            this._schedule(function() {
+                setTimeout(function() {
+                    fn.call(receiver, arg);
+                }, 100);
+            });
+        }
+    };
+
+    Async.prototype.invoke = function (fn, receiver, arg) {
+        if (this._trampolineEnabled) {
+            AsyncInvoke.call(this, fn, receiver, arg);
+        } else {
+            this._schedule(function() {
+                fn.call(receiver, arg);
+            });
+        }
+    };
+
+    Async.prototype.settlePromises = function(promise) {
+        if (this._trampolineEnabled) {
+            AsyncSettlePromises.call(this, promise);
+        } else {
+            this._schedule(function() {
+                promise._settlePromises();
+            });
+        }
+    };
+}
+
+Async.prototype._drainQueue = function(queue) {
+    while (queue.length() > 0) {
+        var fn = queue.shift();
+        if (typeof fn !== "function") {
+            fn._settlePromises();
+            continue;
+        }
+        var receiver = queue.shift();
+        var arg = queue.shift();
+        fn.call(receiver, arg);
+    }
+};
+
+Async.prototype._drainQueues = function () {
+    this._drainQueue(this._normalQueue);
+    this._reset();
+    this._haveDrainedQueues = true;
+    this._drainQueue(this._lateQueue);
+};
+
+Async.prototype._queueTick = function () {
+    if (!this._isTickUsed) {
+        this._isTickUsed = true;
+        this._schedule(this.drainQueues);
+    }
+};
+
+Async.prototype._reset = function () {
+    this._isTickUsed = false;
+};
+
+module.exports = Async;
+module.exports.firstLineError = firstLineError;
