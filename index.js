@@ -1,60 +1,32 @@
+/* eslint-disable babel/new-cap, xo/throw-new-error */
 'use strict';
-const {constants: BufferConstants} = require('buffer');
-const pump = require('pump');
-const bufferStream = require('./buffer-stream');
-
-class MaxBufferError extends Error {
-	constructor() {
-		super('maxBuffer exceeded');
-		this.name = 'MaxBufferError';
-	}
-}
-
-async function getStream(inputStream, options) {
-	if (!inputStream) {
-		return Promise.reject(new Error('Expected a stream'));
+module.exports = function (str, pos) {
+	if (str === null || str === undefined) {
+		throw TypeError();
 	}
 
-	options = {
-		maxBuffer: Infinity,
-		...options
-	};
+	str = String(str);
 
-	const {maxBuffer} = options;
+	var size = str.length;
+	var i = pos ? Number(pos) : 0;
 
-	let stream;
-	await new Promise((resolve, reject) => {
-		const rejectPromise = error => {
-			// Don't retrieve an oversized buffer.
-			if (error && stream.getBufferedLength() <= BufferConstants.MAX_LENGTH) {
-				error.bufferedData = stream.getBufferedValue();
-			}
+	if (Number.isNaN(i)) {
+		i = 0;
+	}
 
-			reject(error);
-		};
+	if (i < 0 || i >= size) {
+		return undefined;
+	}
 
-		stream = pump(inputStream, bufferStream(options), error => {
-			if (error) {
-				rejectPromise(error);
-				return;
-			}
+	var first = str.charCodeAt(i);
 
-			resolve();
-		});
+	if (first >= 0xD800 && first <= 0xDBFF && size > i + 1) {
+		var second = str.charCodeAt(i + 1);
 
-		stream.on('data', () => {
-			if (stream.getBufferedLength() > maxBuffer) {
-				rejectPromise(new MaxBufferError());
-			}
-		});
-	});
+		if (second >= 0xDC00 && second <= 0xDFFF) {
+			return ((first - 0xD800) * 0x400) + second - 0xDC00 + 0x10000;
+		}
+	}
 
-	return stream.getBufferedValue();
-}
-
-module.exports = getStream;
-// TODO: Remove this for the next major release
-module.exports.default = getStream;
-module.exports.buffer = (stream, options) => getStream(stream, {...options, encoding: 'buffer'});
-module.exports.array = (stream, options) => getStream(stream, {...options, array: true});
-module.exports.MaxBufferError = MaxBufferError;
+	return first;
+};

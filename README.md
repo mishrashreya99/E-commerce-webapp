@@ -1,50 +1,62 @@
-# buffer-equal-constant-time
+# clone-response
 
-Constant-time `Buffer` comparison for node.js.  Should work with browserify too.
+> Clone a Node.js HTTP response stream
 
-[![Build Status](https://travis-ci.org/goinstant/buffer-equal-constant-time.png?branch=master)](https://travis-ci.org/goinstant/buffer-equal-constant-time)
+[![Build Status](https://travis-ci.org/lukechilds/clone-response.svg?branch=master)](https://travis-ci.org/lukechilds/clone-response)
+[![Coverage Status](https://coveralls.io/repos/github/lukechilds/clone-response/badge.svg?branch=master)](https://coveralls.io/github/lukechilds/clone-response?branch=master)
+[![npm](https://img.shields.io/npm/dm/clone-response.svg)](https://www.npmjs.com/package/clone-response)
+[![npm](https://img.shields.io/npm/v/clone-response.svg)](https://www.npmjs.com/package/clone-response)
 
-```sh
-  npm install buffer-equal-constant-time
+Returns a new stream and copies over all properties and methods from the original response giving you a complete duplicate.
+
+This is useful in situations where you need to consume the response stream but also want to pass an unconsumed stream somewhere else to be consumed later.
+
+## Install
+
+```shell
+npm install --save clone-response
 ```
 
-# Usage
+## Usage
 
 ```js
-  var bufferEq = require('buffer-equal-constant-time');
+const http = require('http');
+const cloneResponse = require('clone-response');
 
-  var a = new Buffer('asdf');
-  var b = new Buffer('asdf');
-  if (bufferEq(a,b)) {
-    // the same!
-  } else {
-    // different in at least one byte!
-  }
+http.get('http://example.com', response => {
+  const clonedResponse = cloneResponse(response);
+  response.pipe(process.stdout);
+
+  setImmediate(() => {
+    // The response stream has already been consumed by the time this executes,
+    // however the cloned response stream is still available.
+    doSomethingWithResponse(clonedResponse);
+  });
+});
 ```
 
-If you'd like to install an `.equal()` method onto the node.js `Buffer` and
-`SlowBuffer` prototypes:
+Please bear in mind that the process of cloning a stream consumes it. However, you can consume a stream multiple times in the same tick, therefore allowing you to create multiple clones. e.g:
 
 ```js
-  require('buffer-equal-constant-time').install();
-
-  var a = new Buffer('asdf');
-  var b = new Buffer('asdf');
-  if (a.equal(b)) {
-    // the same!
-  } else {
-    // different in at least one byte!
-  }
+const clone1 = cloneResponse(response);
+const clone2 = cloneResponse(response);
+// response can still be consumed in this tick but cannot be consumed if passed
+// into any async callbacks. clone1 and clone2 can be passed around and be
+// consumed in the future.
 ```
 
-To get rid of the installed `.equal()` method, call `.restore()`:
+## API
 
-```js
-  require('buffer-equal-constant-time').restore();
-```
+### cloneResponse(response)
 
-# Legal
+Returns a clone of the passed in response.
 
-&copy; 2013 GoInstant Inc., a salesforce.com company
+#### response
 
-Licensed under the BSD 3-clause license.
+Type: `stream`
+
+A [Node.js HTTP response stream](https://nodejs.org/api/http.html#http_class_http_incomingmessage) to clone.
+
+## License
+
+MIT © Luke Childs
