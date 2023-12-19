@@ -1,117 +1,123 @@
-# dot-prop [![Build Status](https://travis-ci.org/sindresorhus/dot-prop.svg?branch=master)](https://travis-ci.org/sindresorhus/dot-prop)
+# get-stream [![Build Status](https://travis-ci.org/sindresorhus/get-stream.svg?branch=master)](https://travis-ci.org/sindresorhus/get-stream)
 
-> Get, set, or delete a property from a nested object using a dot path
+> Get a stream as a string, buffer, or array
 
 
 ## Install
 
 ```
-$ npm install dot-prop
+$ npm install get-stream
 ```
 
 
 ## Usage
 
 ```js
-const dotProp = require('dot-prop');
+const fs = require('fs');
+const getStream = require('get-stream');
 
-// Getter
-dotProp.get({foo: {bar: 'unicorn'}}, 'foo.bar');
-//=> 'unicorn'
+(async () => {
+	const stream = fs.createReadStream('unicorn.txt');
 
-dotProp.get({foo: {bar: 'a'}}, 'foo.notDefined.deep');
-//=> undefined
-
-dotProp.get({foo: {bar: 'a'}}, 'foo.notDefined.deep', 'default value');
-//=> 'default value'
-
-dotProp.get({foo: {'dot.dot': 'unicorn'}}, 'foo.dot\\.dot');
-//=> 'unicorn'
-
-// Setter
-const object = {foo: {bar: 'a'}};
-dotProp.set(object, 'foo.bar', 'b');
-console.log(object);
-//=> {foo: {bar: 'b'}}
-
-const foo = dotProp.set({}, 'foo.bar', 'c');
-console.log(foo);
-//=> {foo: {bar: 'c'}}
-
-dotProp.set(object, 'foo.baz', 'x');
-console.log(object);
-//=> {foo: {bar: 'b', baz: 'x'}}
-
-// Has
-dotProp.has({foo: {bar: 'unicorn'}}, 'foo.bar');
-//=> true
-
-// Deleter
-const object = {foo: {bar: 'a'}};
-dotProp.delete(object, 'foo.bar');
-console.log(object);
-//=> {foo: {}}
-
-object.foo.bar = {x: 'y', y: 'x'};
-dotProp.delete(object, 'foo.bar.x');
-console.log(object);
-//=> {foo: {bar: {y: 'x'}}}
+	console.log(await getStream(stream));
+	/*
+	              ,,))))))));,
+	           __)))))))))))))),
+	\|/       -\(((((''''((((((((.
+	-*-==//////((''  .     `)))))),
+	/|\      ))| o    ;-.    '(((((                                  ,(,
+	         ( `|    /  )    ;))))'                               ,_))^;(~
+	            |   |   |   ,))((((_     _____------~~~-.        %,;(;(>';'~
+	            o_);   ;    )))(((` ~---~  `::           \      %%~~)(v;(`('~
+	                  ;    ''''````         `:       `:::|\,__,%%    );`'; ~
+	                 |   _                )     /      `:|`----'     `-'
+	           ______/\/~    |                 /        /
+	         /~;;.____/;;'  /          ___--,-(   `;;;/
+	        / //  _;______;'------~~~~~    /;;/\    /
+	       //  | |                        / ;   \;;,\
+	      (<_  | ;                      /',/-----'  _>
+	       \_| ||_                     //~;~~~~~~~~~
+	           `\_|                   (,~~
+	                                   \~\
+	                                    ~~
+	*/
+})();
 ```
 
 
 ## API
 
-### get(object, path, defaultValue?)
+The methods returns a promise that resolves when the `end` event fires on the stream, indicating that there is no more data to be read. The stream is switched to flowing mode.
 
-### set(object, path, value)
+### getStream(stream, [options])
 
-Returns the object.
+Get the `stream` as a string.
 
-### has(object, path)
+#### options
 
-### delete(object, path)
+Type: `Object`
 
-Returns a boolean of whether the property existed before being deleted.
+##### encoding
 
-#### object
+Type: `string`<br>
+Default: `utf8`
 
-Type: `object`
+[Encoding](https://nodejs.org/api/buffer.html#buffer_buffer) of the incoming stream.
 
-Object to get, set, or delete the `path` value.
+##### maxBuffer
 
-You are allowed to pass in `undefined` as the object to the `get` and `has` functions.
+Type: `number`<br>
+Default: `Infinity`
 
-#### path
+Maximum length of the returned string. If it exceeds this value before the stream ends, the promise will be rejected with a `getStream.MaxBufferError` error.
 
-Type: `string`
+### getStream.buffer(stream, [options])
 
-Path of the property in the object, using `.` to separate each nested key.
+Get the `stream` as a buffer.
 
-Use `\\.` if you have a `.` in the key.
+It honors the `maxBuffer` option as above, but it refers to byte length rather than string length.
 
-The following path components are invalid and results in `undefined` being returned: `__proto__`, `prototype`, `constructor`.
+### getStream.array(stream, [options])
 
-#### value
+Get the `stream` as an array of values.
 
-Type: `unknown`
+It honors both the `maxBuffer` and `encoding` options. The behavior changes slightly based on the encoding chosen:
 
-Value to set at `path`.
+- When `encoding` is unset, it assumes an [object mode stream](https://nodesource.com/blog/understanding-object-streams/) and collects values emitted from `stream` unmodified. In this case `maxBuffer` refers to the number of items in the array (not the sum of their sizes).
 
-#### defaultValue
+- When `encoding` is set to `buffer`, it collects an array of buffers. `maxBuffer` refers to the summed byte lengths of every buffer in the array.
 
-Type: `unknown`
-
-Default value.
+- When `encoding` is set to anything else, it collects an array of strings. `maxBuffer` refers to the summed character lengths of every string in the array.
 
 
----
+## Errors
 
-<div align="center">
-	<b>
-		<a href="https://tidelift.com/subscription/pkg/npm-dot-prop?utm_source=npm-dot-prop&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
-	</b>
-	<br>
-	<sub>
-		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
-	</sub>
-</div>
+If the input stream emits an `error` event, the promise will be rejected with the error. The buffered data will be attached to the `bufferedData` property of the error.
+
+```js
+(async () => {
+	try {
+		await getStream(streamThatErrorsAtTheEnd('unicorn'));
+	} catch (error) {
+		console.log(error.bufferedData);
+		//=> 'unicorn'
+	}
+})()
+```
+
+
+## FAQ
+
+### How is this different from [`concat-stream`](https://github.com/maxogden/concat-stream)?
+
+This module accepts a stream instead of being one and returns a promise instead of using a callback. The API is simpler and it only supports returning a string, buffer, or array. It doesn't have a fragile type inference. You explicitly choose what you want. And it doesn't depend on the huge `readable-stream` package.
+
+
+## Related
+
+- [get-stdin](https://github.com/sindresorhus/get-stdin) - Get stdin as a string or buffer
+
+
+## License
+
+MIT © [Sindre Sorhus](https://sindresorhus.com)

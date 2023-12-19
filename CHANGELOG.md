@@ -1,184 +1,160 @@
-# Changelog
+### v2.7.4
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+* Reset colors prior to ending a line, to eliminate flicker when a line
+  is trucated between start and end color sequences.
 
-## [8.6.0](https://github.com/motdotla/dotenv/compare/v8.5.1...v8.6.0) (2021-05-05)
+### v2.7.3
 
-### Added
+* Only create our onExit handler when we're enabled and remove it when we're
+  disabled.  This stops us from creating multiple onExit handlers when
+  multiple gauge objects are being used.
+* Fix bug where if a theme name were given instead of a theme object, it
+  would crash.
+* Remove supports-color because it's not actually used.  Uhm.  Yes, I just
+  updated it.  >.>
 
-- define package.json in exports
+### v2.7.2
 
-## [8.5.1](https://github.com/motdotla/dotenv/compare/v8.5.0...v8.5.1) (2021-05-05)
+* Use supports-color instead of has-color (as the module has been renamed)
 
-### Changed
+### v2.7.1
 
-- updated dev dependencies via npm audit
+* Bug fix: Calls to show/pulse while the progress bar is disabled should still
+  update our internal representation of what would be shown should it be enabled.
 
-## [8.5.0](https://github.com/motdotla/dotenv/compare/v8.4.0...v8.5.0) (2021-05-05)
+### v2.7.0
 
-### Added
+* New feature: Add new `isEnabled` method to allow introspection of the gauge's
+  "enabledness" as controlled by `.enable()` and `.disable()`.
 
-- allow for `import "dotenv/config"`
+### v2.6.0
 
-## [8.4.0](https://github.com/motdotla/dotenv/compare/v8.3.0...v8.4.0) (2021-05-05)
+* Bug fix: Don't run the code associated with `enable`/`disable` if the gauge
+  is already enabled or disabled respectively.  This prevents leaking event
+  listeners, amongst other weirdness.
+* New feature: Template items can have default values that will be used if no
+  value was otherwise passed in.
 
-### Changed
+### v2.5.3
 
-- point to exact types file to work with VS Code
+* Default to `enabled` only if we have a tty.  Users can always override
+  this by passing in the `enabled` option explicitly or by calling calling
+  `gauge.enable()`.
 
-## [8.3.0](https://github.com/motdotla/dotenv/compare/v8.2.0...v8.3.0) (2021-05-05)
+### v2.5.2
 
-### Changed
+* Externalized `./console-strings.js` into `console-control-strings`.
 
-- _Breaking:_ drop support for Node v8
+### v2.5.1
 
-## [8.2.0](https://github.com/motdotla/dotenv/compare/v8.1.0...v8.2.0) (2019-10-16)
-
-### Added
-
-- TypeScript types
-
-## [8.1.0](https://github.com/motdotla/dotenv/compare/v8.0.0...v8.1.0) (2019-08-18)
-
-### Changed
-
-- _Breaking:_ drop support for Node v6 ([#392](https://github.com/motdotla/dotenv/issues/392))
-
-# [8.0.0](https://github.com/motdotla/dotenv/compare/v7.0.0...v8.0.0) (2019-05-02)
-
-### Changed
-
-- _Breaking:_ drop support for Node v6 ([#302](https://github.com/motdotla/dotenv/issues/392))
-
-## [7.0.0] - 2019-03-12
-
-### Fixed
-
-- Fix removing unbalanced quotes ([#376](https://github.com/motdotla/dotenv/pull/376))
-
-### Removed
-
-- Removed `load` alias for `config` for consistency throughout code and documentation.
-
-## [6.2.0] - 2018-12-03
-
-### Added
-
-- Support preload configuration via environment variables ([#351](https://github.com/motdotla/dotenv/issues/351))
-
-## [6.1.0] - 2018-10-08
-
-### Added
-
-- `debug` option for `config` and `parse` methods will turn on logging
-
-## [6.0.0] - 2018-06-02
-
-### Changed
-
-- _Breaking:_ drop support for Node v4 ([#304](https://github.com/motdotla/dotenv/pull/304))
-
-## [5.0.0] - 2018-01-29
-
-### Added
-
-- Testing against Node v8 and v9
-- Documentation on trim behavior of values
-- Documentation on how to use with `import`
-
-### Changed
-
-- _Breaking_: default `path` is now `path.resolve(process.cwd(), '.env')`
-- _Breaking_: does not write over keys already in `process.env` if the key has a falsy value
-- using `const` and `let` instead of `var`
-
-### Removed
-
-- Testing against Node v7
-
-## [4.0.0] - 2016-12-23
-
-### Changed
-
-- Return Object with parsed content or error instead of false ([#165](https://github.com/motdotla/dotenv/pull/165)).
-
-### Removed
-
-- `verbose` option removed in favor of returning result.
-
-## [3.0.0] - 2016-12-20
-
-### Added
-
-- `verbose` option will log any error messages. Off by default.
-- parses email addresses correctly
-- allow importing config method directly in ES6
-
-### Changed
-
-- Suppress error messages by default ([#154](https://github.com/motdotla/dotenv/pull/154))
-- Ignoring more files for NPM to make package download smaller
-
-### Fixed
-
-- False positive test due to case-sensitive variable ([#124](https://github.com/motdotla/dotenv/pull/124))
-
-### Removed
-
-- `silent` option removed in favor of `verbose`
-
-## [2.0.0] - 2016-01-20
-
-### Added
-
-- CHANGELOG to ["make it easier for users and contributors to see precisely what notable changes have been made between each release"](http://keepachangelog.com/). Linked to from README
-- LICENSE to be more explicit about what was defined in `package.json`. Linked to from README
-- Testing nodejs v4 on travis-ci
-- added examples of how to use dotenv in different ways
-- return parsed object on success rather than boolean true
-
-### Changed
-
-- README has shorter description not referencing ruby gem since we don't have or want feature parity
-
-### Removed
-
-- Variable expansion and escaping so environment variables are encouraged to be fully orthogonal
-
-## [1.2.0] - 2015-06-20
-
-### Added
-
-- Preload hook to require dotenv without including it in your code
-
-### Changed
-
-- clarified license to be "BSD-2-Clause" in `package.json`
-
-### Fixed
-
-- retain spaces in string vars
-
-## [1.1.0] - 2015-03-31
-
-### Added
-
-- Silent option to silence `console.log` when `.env` missing
-
-## [1.0.0] - 2015-03-13
-
-### Removed
-
-- support for multiple `.env` files. should always use one `.env` file for the current environment
-
-[7.0.0]: https://github.com/motdotla/dotenv/compare/v6.2.0...v7.0.0
-[6.2.0]: https://github.com/motdotla/dotenv/compare/v6.1.0...v6.2.0
-[6.1.0]: https://github.com/motdotla/dotenv/compare/v6.0.0...v6.1.0
-[6.0.0]: https://github.com/motdotla/dotenv/compare/v5.0.0...v6.0.0
-[5.0.0]: https://github.com/motdotla/dotenv/compare/v4.0.0...v5.0.0
-[4.0.0]: https://github.com/motdotla/dotenv/compare/v3.0.0...v4.0.0
-[3.0.0]: https://github.com/motdotla/dotenv/compare/v2.0.0...v3.0.0
-[2.0.0]: https://github.com/motdotla/dotenv/compare/v1.2.0...v2.0.0
-[1.2.0]: https://github.com/motdotla/dotenv/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/motdotla/dotenv/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/motdotla/dotenv/compare/v0.4.0...v1.0.0
+* Update to `signal-exit@3.0.0`, which fixes a compatibility bug with the
+  node profiler.
+* [#39](https://github.com/iarna/gauge/pull/39) Fix tests on 0.10 and add
+  a missing devDependency. ([@helloyou2012](https://github.com/helloyou2012))
+
+### v2.5.0
+
+* Add way to programmatically fetch a list of theme names in a themeset
+  (`Themeset.getThemeNames`).
+
+### v2.4.0
+
+* Add support for setting themesets on existing gauge objects.
+* Add post-IO callback to `gauge.hide()` as it is somtetimes necessary when
+  your terminal is interleaving output from multiple filehandles (ie, stdout
+  & stderr).
+
+### v2.3.1
+
+* Fix a refactor bug in setTheme where it wasn't accepting the various types
+  of args it should.
+
+### v2.3.0
+
+#### FEATURES
+
+* Add setTemplate & setTheme back in.
+* Add support for named themes, you can now ask for things like 'colorASCII'
+  and 'brailleSpinner'.  Of course, you can still pass in theme objects.
+  Additionally you can now pass in an object with `hasUnicode`, `hasColor` and
+  `platform` keys in order to override our guesses as to those values when
+  selecting a default theme from the themeset.
+* Make the output stream optional (it defaults to `process.stderr` now).
+* Add `setWriteTo(stream[, tty])` to change the output stream and,
+  optionally, tty.
+
+#### BUG FIXES & REFACTORING
+
+* Abort the display phase early if we're supposed to be hidden and we are.
+* Stop printing a bunch of spaces at the end of lines, since we're already
+  using an erase-to-end-of-line code anyway.
+* The unicode themes were missing the subsection separator.
+
+### v2.2.1
+
+* Fix image in readme
+
+### v2.2.0
+
+* All new themes API– reference themes by name and pass in custom themes and
+  themesets (themesets get platform support autodetection done on them to
+  select the best theme).  Theme mixins let you add features to all existing
+  themes.
+* Much, much improved test coverage.
+
+### v2.1.0
+
+* Got rid of ░ in the default platform, noUnicode, hasColor theme.  Thanks
+  to @yongtw123 for pointing out this had snuck in.
+* Fiddled with the demo output to make it easier to see the spinner spin. Also
+  added prints before each platforms test output.
+* I forgot to include `signal-exit` in our deps.  <.< Thank you @KenanY for
+  finding this. Then I was lazy and made a new commit instead of using his
+  PR. Again, thank you for your patience @KenenY.
+* Drastically speed up travis testing.
+* Add a small javascript demo (demo.js) for showing off the various themes
+  (and testing them on diff platforms).
+* Change: The subsection separator from ⁄ and / (different chars) to >.
+* Fix crasher: A show or pulse without a label would cause the template renderer
+  to complain about a missing value.
+* New feature: Add the ability to disable the clean-up-on-exit behavior.
+  Not something I expect to be widely desirable, but important if you have
+  multiple distinct gauge instances in your app.
+* Use our own color support detection.
+  The `has-color` module proved too magic for my needs, making assumptions
+  as to which stream we write to and reading command line arguments.
+
+### v2.0.0
+
+This is a major rewrite of the internals.  Externally there are fewer
+changes:
+
+* On node>0.8 gauge object now prints updates at a fixed rate.  This means
+  that when you call `show` it may wate up to `updateInterval` ms before it
+  actually prints an update.  You override this behavior with the
+  `fixedFramerate` option.
+* The gauge object now keeps the cursor hidden as long as it's enabled and
+  shown.
+* The constructor's arguments have changed, now it takes a mandatory output
+  stream and an optional options object.  The stream no longer needs to be
+  an `ansi`ified stream, although it can be if you want (but we won't make
+  use of its special features).
+* Previously the gauge was disabled by default if `process.stdout` wasn't a
+  tty.  Now it always defaults to enabled.  If you want the previous
+  behavior set the `enabled` option to `process.stdout.isTTY`.
+* The constructor's options have changed– see the docs for details.
+* Themes are entirely different.  If you were using a custom theme, or
+  referring to one directly (eg via `Gauge.unicode` or `Gauge.ascii`) then
+  you'll need to change your code.  You can get the equivalent of the latter
+  with:
+  ```
+  var themes = require('gauge/themes')
+  var unicodeTheme = themes(true, true) // returns the color unicode theme for your platform
+  ```
+  The default themes no longer use any ambiguous width characters, so even
+  if you choose to display those as wide your progress bar should still
+  display correctly.
+* Templates are entirely different and if you were using a custom one, you
+  should consult the documentation to learn how to recreate it.  If you were
+  using the default, be aware that it has changed and the result looks quite
+  a bit different.

@@ -1,101 +1,62 @@
-declare const dotProp: {
-	/**
-	@param object - Object to get the `path` value.
-	@param path - Path of the property in the object, using `.` to separate each nested key. Use `\\.` if you have a `.` in the key.
-	@param defaultValue - Default value.
+/**
+Escape a string for use in HTML.
 
-	@example
-	```
-	import dotProp = require('dot-prop');
+Escapes the following characters in the given `string` argument: `&` `<` `>` `"` `'`.
 
-	dotProp.get({foo: {bar: 'unicorn'}}, 'foo.bar');
-	//=> 'unicorn'
+@example
+```
+import {htmlEscape} from 'escape-goat';
 
-	dotProp.get({foo: {bar: 'a'}}, 'foo.notDefined.deep');
-	//=> undefined
+htmlEscape('🦄 & 🐐');
+//=> '🦄 &amp; 🐐'
 
-	dotProp.get({foo: {bar: 'a'}}, 'foo.notDefined.deep', 'default value');
-	//=> 'default value'
+htmlEscape('Hello <em>World</em>');
+//=> 'Hello &lt;em&gt;World&lt;/em&gt;'
+```
+*/
+export function htmlEscape(string: string): string;
 
-	dotProp.get({foo: {'dot.dot': 'unicorn'}}, 'foo.dot\\.dot');
-	//=> 'unicorn'
-	```
-	*/
-	get<T>(
-		object: {[key: string]: any} | undefined,
-		path: string
-	): T | undefined;
-	get<T>(
-		object: {[key: string]: any} | undefined,
-		path: string,
-		defaultValue: T
-	): T;
+/**
+Unescape an HTML string to use as a plain string.
 
-	/**
-	@param object - Object to set the `path` value.
-	@param path - Path of the property in the object, using `.` to separate each nested key. Use `\\.` if you have a `.` in the key.
-	@param value - Value to set at `path`.
-	@returns The object.
+Unescapes the following HTML entities in the given `htmlString` argument: `&amp;` `&lt;` `&gt;` `&quot;` `&#39;`.
 
-	@example
-	```
-	import dotProp = require('dot-prop');
+@example
+```
+import {htmlUnescape} from 'escape-goat';
 
-	const object = {foo: {bar: 'a'}};
-	dotProp.set(object, 'foo.bar', 'b');
-	console.log(object);
-	//=> {foo: {bar: 'b'}}
+htmlUnescape('🦄 &amp; 🐐');
+//=> '🦄 & 🐐'
+```
+*/
+export function htmlUnescape(htmlString: string): string;
 
-	const foo = dotProp.set({}, 'foo.bar', 'c');
-	console.log(foo);
-	//=> {foo: {bar: 'c'}}
+/**
+[Tagged template literal](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) that escapes interpolated values.
 
-	dotProp.set(object, 'foo.baz', 'x');
-	console.log(object);
-	//=> {foo: {bar: 'b', baz: 'x'}}
-	```
-	*/
-	set<T extends {[key: string]: any}>(
-		object: T,
-		path: string,
-		value: unknown
-	): T;
+@example
+```
+import {htmlEscapeTag} from 'escape-goat';
 
-	/**
-	@param object - Object to test the `path` value.
-	@param path - Path of the property in the object, using `.` to separate each nested key. Use `\\.` if you have a `.` in the key.
+const url = 'https://sindresorhus.com?x="🦄"';
 
-	@example
-	```
-	import dotProp = require('dot-prop');
+htmlEscapeTag`<a href="${url}">Unicorn</a>`;
+//=> '<a href="https://sindresorhus.com?x=&quot;🦄&quot;">Unicorn</a>'
+```
+*/
+export function htmlEscapeTag(template: TemplateStringsArray, ...substitutions: readonly unknown[]): string;
 
-	dotProp.has({foo: {bar: 'unicorn'}}, 'foo.bar');
-	//=> true
-	```
-	*/
-	has(object: {[key: string]: any} | undefined, path: string): boolean;
+/**
+[Tagged template literal](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) that unescapes interpolated values.
 
-	/**
-	@param object - Object to delete the `path` value.
-	@param path - Path of the property in the object, using `.` to separate each nested key. Use `\\.` if you have a `.` in the key.
-	@returns A boolean of whether the property existed before being deleted.
+@example
+```
+import {htmlUnescapeTag} from 'escape-goat';
 
-	@example
-	```
-	import dotProp = require('dot-prop');
+const escapedUrl = 'https://sindresorhus.com?x=&quot;🦄&quot;';
 
-	const object = {foo: {bar: 'a'}};
-	dotProp.delete(object, 'foo.bar');
-	console.log(object);
-	//=> {foo: {}}
-
-	object.foo.bar = {x: 'y', y: 'x'};
-	dotProp.delete(object, 'foo.bar.x');
-	console.log(object);
-	//=> {foo: {bar: {y: 'x'}}}
-	```
-	*/
-	delete(object: {[key: string]: any}, path: string): boolean;
-};
-
-export = dotProp;
+htmlUnescapeTag`URL from HTML: ${url}`;
+//=> 'URL from HTML: https://sindresorhus.com?x="🦄"'
+```
+*/
+export function htmlUnescapeTag(template: TemplateStringsArray, ...substitutions: readonly unknown[]): string;
