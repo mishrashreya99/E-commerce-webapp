@@ -1,125 +1,113 @@
-'use strict';
+/* @flow */
+/*::
 
-/**
- * Set the title.
- */
+type DotenvParseOptions = {
+  debug?: boolean
+}
 
-process.title = 'node-pre-gyp';
+// keys and values from src
+type DotenvParseOutput = { [string]: string }
 
-const node_pre_gyp = require('../');
-const log = require('npmlog');
+type DotenvConfigOptions = {
+  path?: string, // path to .env file
+  encoding?: string, // encoding of .env file
+  debug?: string // turn on logging for debugging purposes
+}
 
-/**
- * Process and execute the selected commands.
- */
+type DotenvConfigOutput = {
+  parsed?: DotenvParseOutput,
+  error?: Error
+}
 
-const prog = new node_pre_gyp.Run({ argv: process.argv });
-let completed = false;
+*/
 
-if (prog.todo.length === 0) {
-  if (~process.argv.indexOf('-v') || ~process.argv.indexOf('--version')) {
-    console.log('v%s', prog.version);
-    process.exit(0);
-  } else if (~process.argv.indexOf('-h') || ~process.argv.indexOf('--help')) {
-    console.log('%s', prog.usage());
-    process.exit(0);
+const fs = require('fs')
+const path = require('path')
+
+function log (message /*: string */) {
+  console.log(`[dotenv][DEBUG] ${message}`)
+}
+
+const NEWLINE = '\n'
+const RE_INI_KEY_VAL = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/
+const RE_NEWLINES = /\\n/g
+const NEWLINES_MATCH = /\n|\r|\r\n/
+
+// Parses src into an Object
+function parse (src /*: string | Buffer */, options /*: ?DotenvParseOptions */) /*: DotenvParseOutput */ {
+  const debug = Boolean(options && options.debug)
+  const obj = {}
+
+  // convert Buffers before splitting into lines and processing
+  src.toString().split(NEWLINES_MATCH).forEach(function (line, idx) {
+    // matching "KEY' and 'VAL' in 'KEY=VAL'
+    const keyValueArr = line.match(RE_INI_KEY_VAL)
+    // matched?
+    if (keyValueArr != null) {
+      const key = keyValueArr[1]
+      // default undefined or missing values to empty string
+      let val = (keyValueArr[2] || '')
+      const end = val.length - 1
+      const isDoubleQuoted = val[0] === '"' && val[end] === '"'
+      const isSingleQuoted = val[0] === "'" && val[end] === "'"
+
+      // if single or double quoted, remove quotes
+      if (isSingleQuoted || isDoubleQuoted) {
+        val = val.substring(1, end)
+
+        // if double quoted, expand newlines
+        if (isDoubleQuoted) {
+          val = val.replace(RE_NEWLINES, NEWLINE)
+        }
+      } else {
+        // remove surrounding whitespace
+        val = val.trim()
+      }
+
+      obj[key] = val
+    } else if (debug) {
+      log(`did not match key and value when parsing line ${idx + 1}: ${line}`)
+    }
+  })
+
+  return obj
+}
+
+// Populates process.env from .env file
+function config (options /*: ?DotenvConfigOptions */) /*: DotenvConfigOutput */ {
+  let dotenvPath = path.resolve(process.cwd(), '.env')
+  let encoding /*: string */ = 'utf8'
+  let debug = false
+
+  if (options) {
+    if (options.path != null) {
+      dotenvPath = options.path
+    }
+    if (options.encoding != null) {
+      encoding = options.encoding
+    }
+    if (options.debug != null) {
+      debug = true
+    }
   }
-  console.log('%s', prog.usage());
-  process.exit(1);
-}
 
-// if --no-color is passed
-if (prog.opts && Object.hasOwnProperty.call(prog, 'color') && !prog.opts.color) {
-  log.disableColor();
-}
-
-log.info('it worked if it ends with', 'ok');
-log.verbose('cli', process.argv);
-log.info('using', process.title + '@%s', prog.version);
-log.info('using', 'node@%s | %s | %s', process.versions.node, process.platform, process.arch);
-
-
-/**
- * Change dir if -C/--directory was passed.
- */
-
-const dir = prog.opts.directory;
-if (dir) {
-  const fs = require('fs');
   try {
-    const stat = fs.statSync(dir);
-    if (stat.isDirectory()) {
-      log.info('chdir', dir);
-      process.chdir(dir);
-    } else {
-      log.warn('chdir', dir + ' is not a directory');
-    }
+    // specifying an encoding returns a string instead of a buffer
+    const parsed = parse(fs.readFileSync(dotenvPath, { encoding }), { debug })
+
+    Object.keys(parsed).forEach(function (key) {
+      if (!Object.prototype.hasOwnProperty.call(process.env, key)) {
+        process.env[key] = parsed[key]
+      } else if (debug) {
+        log(`"${key}" is already defined in \`process.env\` and will not be overwritten`)
+      }
+    })
+
+    return { parsed }
   } catch (e) {
-    if (e.code === 'ENOENT') {
-      log.warn('chdir', dir + ' is not a directory');
-    } else {
-      log.warn('chdir', 'error during chdir() "%s"', e.message);
-    }
+    return { error: e }
   }
 }
 
-function run() {
-  const command = prog.todo.shift();
-  if (!command) {
-    // done!
-    completed = true;
-    log.info('ok');
-    return;
-  }
-
-  // set binary.host when appropriate. host determines the s3 target bucket.
-  const target = prog.setBinaryHostProperty(command.name);
-  if (target && ['install', 'publish', 'unpublish', 'info'].indexOf(command.name) >= 0) {
-    log.info('using binary.host: ' + prog.package_json.binary.host);
-  }
-
-  prog.commands[command.name](command.args, function(err) {
-    if (err) {
-      log.error(command.name + ' error');
-      log.error('stack', err.stack);
-      errorMessage();
-      log.error('not ok');
-      console.log(err.message);
-      return process.exit(1);
-    }
-    const args_array = [].slice.call(arguments, 1);
-    if (args_array.length) {
-      console.log.apply(console, args_array);
-    }
-    // now run the next command in the queue
-    process.nextTick(run);
-  });
-}
-
-process.on('exit', (code) => {
-  if (!completed && !code) {
-    log.error('Completion callback never invoked!');
-    errorMessage();
-    process.exit(6);
-  }
-});
-
-process.on('uncaughtException', (err) => {
-  log.error('UNCAUGHT EXCEPTION');
-  log.error('stack', err.stack);
-  errorMessage();
-  process.exit(7);
-});
-
-function errorMessage() {
-  // copied from npm's lib/util/error-handler.js
-  const os = require('os');
-  log.error('System', os.type() + ' ' + os.release());
-  log.error('command', process.argv.map(JSON.stringify).join(' '));
-  log.error('cwd', process.cwd());
-  log.error('node -v', process.version);
-  log.error(process.title + ' -v', 'v' + prog.package.version);
-}
-
-// start running the given commands!
-run();
+module.exports.config = config
+module.exports.parse = parse

@@ -1,51 +1,117 @@
-# crypto-random-string [![Build Status](https://travis-ci.org/sindresorhus/crypto-random-string.svg?branch=master)](https://travis-ci.org/sindresorhus/crypto-random-string)
+# dot-prop [![Build Status](https://travis-ci.org/sindresorhus/dot-prop.svg?branch=master)](https://travis-ci.org/sindresorhus/dot-prop)
 
-> Generate a [cryptographically strong](https://en.m.wikipedia.org/wiki/Strong_cryptography) random string
-
-Can be useful for creating an identifier, slug, salt, fixture, etc.
+> Get, set, or delete a property from a nested object using a dot path
 
 
 ## Install
 
 ```
-$ npm install crypto-random-string
+$ npm install dot-prop
 ```
 
 
 ## Usage
 
 ```js
-const cryptoRandomString = require('crypto-random-string');
+const dotProp = require('dot-prop');
 
-cryptoRandomString(10);
-//=> '2cf05d94db'
+// Getter
+dotProp.get({foo: {bar: 'unicorn'}}, 'foo.bar');
+//=> 'unicorn'
+
+dotProp.get({foo: {bar: 'a'}}, 'foo.notDefined.deep');
+//=> undefined
+
+dotProp.get({foo: {bar: 'a'}}, 'foo.notDefined.deep', 'default value');
+//=> 'default value'
+
+dotProp.get({foo: {'dot.dot': 'unicorn'}}, 'foo.dot\\.dot');
+//=> 'unicorn'
+
+// Setter
+const object = {foo: {bar: 'a'}};
+dotProp.set(object, 'foo.bar', 'b');
+console.log(object);
+//=> {foo: {bar: 'b'}}
+
+const foo = dotProp.set({}, 'foo.bar', 'c');
+console.log(foo);
+//=> {foo: {bar: 'c'}}
+
+dotProp.set(object, 'foo.baz', 'x');
+console.log(object);
+//=> {foo: {bar: 'b', baz: 'x'}}
+
+// Has
+dotProp.has({foo: {bar: 'unicorn'}}, 'foo.bar');
+//=> true
+
+// Deleter
+const object = {foo: {bar: 'a'}};
+dotProp.delete(object, 'foo.bar');
+console.log(object);
+//=> {foo: {}}
+
+object.foo.bar = {x: 'y', y: 'x'};
+dotProp.delete(object, 'foo.bar.x');
+console.log(object);
+//=> {foo: {bar: {y: 'x'}}}
 ```
 
 
 ## API
 
-### cryptoRandomString(length)
+### get(object, path, defaultValue?)
 
-Returns a [`hex`](https://en.wikipedia.org/wiki/Hexadecimal) string.
+### set(object, path, value)
 
-#### length
+Returns the object.
 
-Type: `number`
+### has(object, path)
 
-Length of the returned string.
+### delete(object, path)
+
+Returns a boolean of whether the property existed before being deleted.
+
+#### object
+
+Type: `object`
+
+Object to get, set, or delete the `path` value.
+
+You are allowed to pass in `undefined` as the object to the `get` and `has` functions.
+
+#### path
+
+Type: `string`
+
+Path of the property in the object, using `.` to separate each nested key.
+
+Use `\\.` if you have a `.` in the key.
+
+The following path components are invalid and results in `undefined` being returned: `__proto__`, `prototype`, `constructor`.
+
+#### value
+
+Type: `unknown`
+
+Value to set at `path`.
+
+#### defaultValue
+
+Type: `unknown`
+
+Default value.
 
 
-## Related
+---
 
-- [random-int](https://github.com/sindresorhus/random-int) - Generate a random integer
-- [random-float](https://github.com/sindresorhus/random-float) - Generate a random float
-- [random-item](https://github.com/sindresorhus/random-item) - Get a random item from an array
-- [random-boolean](https://github.com/arthurvr/random-boolean) - Get a random boolean
-- [random-obj-key](https://github.com/sindresorhus/random-obj-key) - Get a random key from an object
-- [random-obj-prop](https://github.com/sindresorhus/random-obj-prop) - Get a random property from an object
-- [unique-random](https://github.com/sindresorhus/unique-random) - Generate random numbers that are consecutively unique
-
-
-## License
-
-MIT © [Sindre Sorhus](https://sindresorhus.com)
+<div align="center">
+	<b>
+		<a href="https://tidelift.com/subscription/pkg/npm-dot-prop?utm_source=npm-dot-prop&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
+	</b>
+	<br>
+	<sub>
+		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
+	</sub>
+</div>
