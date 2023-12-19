@@ -1,9 +1,5 @@
-const devConfig = {
-  baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:3000",
-};
-
-const prodConfig = {
-  baseURL: "Your production url",
-};
-
-export const config = devConfig;
+const JWT = {
+  jwt: process.env.JWT_SECRET || '12345-67890-09876-54321',
+  jwtExp: '100d',
+}
+module.exports = {JWT}

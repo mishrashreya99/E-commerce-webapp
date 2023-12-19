@@ -1,24 +1,28 @@
-import "./Product.css";
-import { Link } from "react-router-dom";
+const mongoose = require("mongoose");
 
-const Product = ({ imageUrl, description, price, name, productId }) => {
-  return (
-    <div className="product">
-      <img src={imageUrl} alt={name} />
+const productSchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  countInStock: {
+    type: Number,
+    required: true,
+  },
+  imageUrl: {
+    type: String,
+    required: true,
+  },
+});
 
-      <div className="product__info">
-        <p className="info__name">{name}</p>
+const Product = mongoose.model("product", productSchema);
 
-        <p className="info__description">{description.substring(0, 100)}...</p>
-
-        <p className="info__price">${price}</p>
-
-        <Link to={`/product/${productId}`} className="info__button">
-          View
-        </Link>
-      </div>
-    </div>
-  );
-};
-
-export default Product;
+module.exports = Product;
