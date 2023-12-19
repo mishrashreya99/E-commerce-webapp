@@ -1,113 +1,17 @@
-declare namespace cliBoxes {
-	/**
-	Style of the box border.
-	*/
-	interface BoxStyle {
-		readonly topLeft: string;
-		readonly topRight: string;
-		readonly bottomLeft: string;
-		readonly bottomRight: string;
-		readonly horizontal: string;
-		readonly vertical: string;
-	}
-
-	/**
-	All box styles.
-	*/
-	interface Boxes {
-		/**
-		@example
-		```
-		┌────┐
-		│    │
-		└────┘
-		```
-		*/
-		readonly single: BoxStyle;
-
-		/**
-		@example
-		```
-		╔════╗
-		║    ║
-		╚════╝
-		```
-		*/
-		readonly double: BoxStyle;
-
-		/**
-		@example
-		```
-		╭────╮
-		│    │
-		╰────╯
-		```
-		*/
-		readonly round: BoxStyle;
-
-		/**
-		@example
-		```
-		┏━━━━┓
-		┃    ┃
-		┗━━━━┛
-		```
-		*/
-		readonly bold: BoxStyle;
-
-		/**
-		@example
-		```
-		╓────╖
-		║    ║
-		╙────╜
-		```
-		*/
-		readonly singleDouble: BoxStyle;
-
-		/**
-		@example
-		```
-		╒════╕
-		│    │
-		╘════╛
-		```
-		*/
-		readonly doubleSingle: BoxStyle;
-
-		/**
-		@example
-		```
-		+----+
-		|    |
-		+----+
-		```
-		*/
-		readonly classic: BoxStyle;
-	}
-}
-
 /**
-Boxes for use in the terminal.
+Generate a [cryptographically strong](https://en.m.wikipedia.org/wiki/Strong_cryptography) random string.
+
+@param length - Length of the returned string.
+@returns A [`hex`](https://en.wikipedia.org/wiki/Hexadecimal) string.
 
 @example
 ```
-import cliBoxes = require('cli-boxes');
+import cryptoRandomString = require('crypto-random-string');
 
-console.log(cliBoxes.single);
-// {
-// 	topLeft: '┌',
-// 	topRight: '┐',
-// 	bottomRight: '┘',
-// 	bottomLeft: '└',
-// 	vertical: '│',
-// 	horizontal: '─'
-// }
+cryptoRandomString(10);
+//=> '2cf05d94db'
 ```
 */
-declare const cliBoxes: cliBoxes.Boxes & {
-	// TODO: Remove this for the next major release
-	default: typeof cliBoxes;
-};
+declare function cryptoRandomString(length: number): string;
 
-export = cliBoxes;
+export = cryptoRandomString;

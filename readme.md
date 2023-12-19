@@ -1,30 +1,49 @@
-# code-point-at [![Build Status](https://travis-ci.org/sindresorhus/code-point-at.svg?branch=master)](https://travis-ci.org/sindresorhus/code-point-at)
+# crypto-random-string [![Build Status](https://travis-ci.org/sindresorhus/crypto-random-string.svg?branch=master)](https://travis-ci.org/sindresorhus/crypto-random-string)
 
-> ES2015 [`String#codePointAt()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt) [ponyfill](https://ponyfill.com)
+> Generate a [cryptographically strong](https://en.m.wikipedia.org/wiki/Strong_cryptography) random string
+
+Can be useful for creating an identifier, slug, salt, fixture, etc.
 
 
 ## Install
 
 ```
-$ npm install --save code-point-at
+$ npm install crypto-random-string
 ```
 
 
 ## Usage
 
 ```js
-var codePointAt = require('code-point-at');
+const cryptoRandomString = require('crypto-random-string');
 
-codePointAt('🐴');
-//=> 128052
-
-codePointAt('abc', 2);
-//=> 99
+cryptoRandomString(10);
+//=> '2cf05d94db'
 ```
+
 
 ## API
 
-### codePointAt(input, [position])
+### cryptoRandomString(length)
+
+Returns a [`hex`](https://en.wikipedia.org/wiki/Hexadecimal) string.
+
+#### length
+
+Type: `number`
+
+Length of the returned string.
+
+
+## Related
+
+- [random-int](https://github.com/sindresorhus/random-int) - Generate a random integer
+- [random-float](https://github.com/sindresorhus/random-float) - Generate a random float
+- [random-item](https://github.com/sindresorhus/random-item) - Get a random item from an array
+- [random-boolean](https://github.com/arthurvr/random-boolean) - Get a random boolean
+- [random-obj-key](https://github.com/sindresorhus/random-obj-key) - Get a random key from an object
+- [random-obj-prop](https://github.com/sindresorhus/random-obj-prop) - Get a random property from an object
+- [unique-random](https://github.com/sindresorhus/unique-random) - Generate random numbers that are consecutively unique
 
 
 ## License
